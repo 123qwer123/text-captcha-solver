@@ -1,0 +1,8 @@
+numpy
+pillow
+onnxruntime-directml
+uvicorn
+fastapi
+opencv-python-headless
+aiohttp
+scipy
