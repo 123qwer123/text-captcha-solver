@@ -9,8 +9,5 @@ __pycache__/
 # Virtual Environment
 .venv/
 
-# Models (too large for git, download separately)
-model/*.onnx
-
 # Debug / temp
 debug/
