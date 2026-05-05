@@ -14,6 +14,8 @@
 // @license      MIT
 // @homepageURL  https://github.com/Dingtaiqi/text-captcha-solver
 // @supportURL   https://github.com/Dingtaiqi/text-captcha-solver/issues
+// @updateURL    https://raw.githubusercontent.com/Dingtaiqi/text-captcha-solver/main/text_select_captcha.user.js
+// @downloadURL  https://raw.githubusercontent.com/Dingtaiqi/text-captcha-solver/main/text_select_captcha.user.js
 // ==/UserScript==
 
 (function () {
