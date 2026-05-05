@@ -1,15 +1,19 @@
 // ==UserScript==
-// @name         文字点选验证码自动识别
-// @namespace    http://tampermonkey.net/
-// @version      1.3
-// @description  自动识别并点击文字点选验证码（支持腾讯云/极验循环解），需要本地运行识别API服务
-// @author       you
+// @name         智谱清言GLM过验证码
+// @namespace    https://github.com/Dingtaiqi/text-captcha-solver
+// @version      1.4
+// @description  自动识别并点击腾讯云/极验文字点选验证码，YOLO+Siamese+Hungarian匹配。
+// @description  使用前必须本地运行识别API服务，详见GitHub仓库：
+// @description  https://github.com/Dingtaiqi/text-captcha-solver
+// @author       Dingtaiqi
 // @match        *://*/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_notification
 // @connect      localhost
 // @connect      127.0.0.1
 // @license      MIT
+// @homepageURL  https://github.com/Dingtaiqi/text-captcha-solver
+// @supportURL   https://github.com/Dingtaiqi/text-captcha-solver/issues
 // ==/UserScript==
 
 (function () {
