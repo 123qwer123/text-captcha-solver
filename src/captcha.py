@@ -94,15 +94,34 @@ class TextSelectCaptcha(object):
             return [t[0] for t in targets]
 
         boxes = [t[0] for t in targets]
-
-        # Siamese + Hungarian
         img_targets = [img[int(b[1]):int(b[3]), int(b[0]):int(b[2])] for b in boxes]
-        char_imgs = self._render_chars(chars_to_click, target_sizes=[(c.shape[1], c.shape[0]) for c in img_targets])
-        slys = self.pre.reason_all_batch(char_imgs, img_targets)
 
-        cost = -np.array(slys)
-        _, col_ind = linear_sum_assignment(cost)
-        ordered = [boxes[j] for j in col_ind]
+        # 两阶段匹配：提示字 → 图上参考字(class 2) → 目标框(class 0)
+        # 参考字和目标框来自同一张图，风格一致，Siamese 匹配更可靠
+        class2_boxes = [item[:4] for item in full_data
+                        if len(item) >= 6 and item[5] == 2 and item[4] > 0.1]
+        class2_boxes = class2_boxes[:N]
+
+        if len(class2_boxes) == N:
+            class2_imgs = [img[int(b[1]):int(b[3]), int(b[0]):int(b[2])] for b in class2_boxes]
+            # Stage 1: 渲染字 → 参考字（确定每个参考字对应哪个提示字）
+            char_imgs = self._render_chars(chars_to_click, target_sizes=[(c.shape[1], c.shape[0]) for c in class2_imgs])
+            slys1 = self.pre.reason_all_batch(char_imgs, class2_imgs)
+            _, col1 = linear_sum_assignment(-np.array(slys1))
+            # 按提示顺序排列参考字
+            ordered_class2 = [class2_imgs[j] for j in col1]
+            # Stage 2: 参考字 → 目标框（确定点击位置）
+            slys2 = self.pre.reason_all_batch(ordered_class2, img_targets)
+            _, col2 = linear_sum_assignment(-np.array(slys2))
+            ordered = [boxes[j] for j in col2]
+            print(f"[run_with_prompt] 两阶段匹配完成: {[round(slys1[i][col1[i]], 3) for i in range(N)]} → {[round(slys2[i][col2[i]], 3) for i in range(N)]}")
+        else:
+            # 参考字不足，直接匹配（原方案）
+            print(f"[run_with_prompt] 参考字不足({len(class2_boxes)}/{N})，直匹配")
+            char_imgs = self._render_chars(chars_to_click, target_sizes=[(c.shape[1], c.shape[0]) for c in img_targets])
+            slys = self.pre.reason_all_batch(char_imgs, img_targets)
+            _, col_ind = linear_sum_assignment(-np.array(slys))
+            ordered = [boxes[j] for j in col_ind]
         return ordered
 
     @staticmethod
