@@ -167,6 +167,35 @@
         });
     }
 
+    // ===================== 关闭空结果弹窗 =====================
+    function closeEmptyDialog() {
+        const dialog = document.querySelector('.pay-dialog .empty-data-wrap');
+        if (!dialog) return false;
+        const closeBtn = document.querySelector('.pay-dialog .el-dialog__headerbtn');
+        if (closeBtn) {
+            closeBtn.click();
+            log('已关闭 "当前购买人数较多" 弹窗');
+            return true;
+        }
+        return false;
+    }
+
+    let dialogObserver;
+    function startDialogWatcher() {
+        if (dialogObserver) dialogObserver.disconnect();
+        dialogObserver = new MutationObserver(() => {
+            if (closeEmptyDialog()) return;
+            // 也监控文本内容变化（弹窗可能有异步加载）
+            const p = document.querySelector('.pay-dialog .empty-data-wrap p');
+            if (p && p.textContent.includes('当前购买人数较多')) {
+                const closeBtn = document.querySelector('.pay-dialog .el-dialog__headerbtn');
+                if (closeBtn) closeBtn.click();
+            }
+        });
+        dialogObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+        log('弹窗监控已启动');
+    }
+
     // ===================== 主逻辑 =====================
     let isProcessing = false;
     let solvedImages = new Set();  // 用图片URL去重，新图自动解
@@ -231,6 +260,10 @@
             GM_notification({ text: '验证码通过！', timeout: 2000 });
             log('✓ 完成');
 
+            // 提交后检查是否为空的错误弹窗，是则自动关掉
+            await wait(500);
+            closeEmptyDialog();
+
         } catch (err) {
             log('✗ 失败:', err.message);
             GM_notification({ text: '识别失败: ' + err.message, timeout: 4000 });
@@ -271,9 +304,9 @@
     }
 
     function init() {
-        log('脚本已加载 v1.3');
-        if (document.body) { startObserver(); startPolling(); }
-        else document.addEventListener('DOMContentLoaded', () => { startObserver(); startPolling(); });
+        log('脚本已加载 v1.4');
+        if (document.body) { startObserver(); startPolling(); startDialogWatcher(); }
+        else document.addEventListener('DOMContentLoaded', () => { startObserver(); startPolling(); startDialogWatcher(); });
         window.__tc = {
             config: CONFIG, handleNow: handleCaptcha, solved: solvedImages,
             reset: () => { solvedImages.clear(); log('已重置'); },
