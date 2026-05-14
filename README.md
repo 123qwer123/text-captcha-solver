@@ -114,3 +114,98 @@ python service.py
 - 需要 Windows 字体 `simsun.ttc`（宋体），Linux/macOS 需自行配置字体路径
 - GPU 加速需要 DirectX 12 兼容显卡（DirectML），CPU 也可运行但较慢
 - 模型文件未包含在仓库中，需自行训练或获取
+
+## 打包部署
+
+项目支持打包为单文件可执行程序，适用于 **Windows**、**macOS**、**Linux** 三个平台。
+
+### 环境要求
+
+| 平台 | Python 版本 | PyInstaller |
+|------|------------|-------------|
+| Windows | 3.8+ | ✅ 已测试 |
+| macOS | 3.8+ | ✅ 支持 |
+| Linux | 3.8+ | ✅ 支持 |
+
+### 打包步骤
+
+#### 1. 准备环境
+
+确保已安装依赖和模型文件：
+
+```bash
+# 安装依赖
+pip install -r requirements.txt pyinstaller
+
+# 确认模型文件存在
+ls model/
+# 应包含：best_v3.onnx, pre_model_v7.onnx, version.json
+```
+
+#### 2. 执行打包
+
+**Windows：**
+```bash
+# 方式一：使用批处理脚本
+build.bat
+
+# 方式二：手动执行
+py -m PyInstaller build.spec --clean --noconfirm
+```
+
+**macOS / Linux：**
+```bash
+# 安装 PyInstaller
+pip install pyinstaller
+
+# 执行打包
+python -m PyInstaller build.spec --clean --noconfirm
+```
+
+#### 3. 获取产物
+
+打包完成后，可执行文件位于 `dist/` 目录：
+
+| 平台 | 文件名 | 大小 |
+|------|--------|------|
+| Windows | `captcha-service.exe` | ~170 MB |
+| macOS | `captcha-service` | ~150 MB |
+| Linux | `captcha-service` | ~140 MB |
+
+> ⚠️ **注意**：打包产物包含模型文件，体积较大。`dist/` 目录已加入 `.gitignore`，不会提交到 Git。
+
+### 跨平台打包建议
+
+由于 PyInstaller 不支持交叉编译，需要在目标平台上分别打包：
+
+- **Windows**：在 Windows 系统上打包 → 生成 `.exe`
+- **macOS**：在 macOS 系统上打包 → 生成 Mach-O 可执行文件
+- **Linux**：在 Linux 系统上打包 → 生成 ELF 可执行文件
+
+推荐使用 CI/CD 自动化构建（如 GitHub Actions）实现多平台自动打包。
+
+### 运行打包后的程序
+
+```bash
+# Windows
+.\dist\captcha-service.exe
+
+# macOS / Linux
+chmod +x dist/captcha-service
+./dist/captcha-service
+```
+
+服务启动后访问：
+- API 文档：`http://127.0.0.1:8000/docs`
+- ReDoc 文档：`http://127.0.0.1:8000/redoc`
+
+### 常见问题
+
+**Q: 打包后提示找不到模型文件？**  
+A: 确保 `model/` 目录下有 `*.onnx` 和 `version.json` 文件，`build.spec` 已配置自动打包这些文件。
+
+**Q: macOS/Linux 打包后无法运行？**  
+A: 检查是否赋予执行权限：`chmod +x dist/captcha-service`
+
+**Q: 如何减小打包体积？**  
+A: 模型文件占主要体积（~50 MB），如需精简可考虑外部加载模型（修改 `build.spec` 移除模型打包）。
