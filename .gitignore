@@ -12,4 +12,5 @@ __pycache__/
 # Debug / temp
 debug/
 
-/dist/*
+# Build output
+dist/
