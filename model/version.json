@@ -1,0 +1,23 @@
+{
+  "yolo_model": "best_v3.onnx",
+  "siamese_model": "pre_model_v7.onnx",
+  "version": "1.0.0",
+  "update_date": "2026-05-11",
+  "description": "验证码识别模型版本信息",
+  "models": {
+    "best_v3.onnx": {
+      "type": "YOLO",
+      "purpose": "文字定位检测",
+      "input_size": "640x640",
+      "classes": {
+        "0": "目标文字",
+        "2": "参考文字"
+      }
+    },
+    "pre_model_v7.onnx": {
+      "type": "Siamese",
+      "purpose": "文字匹配排序",
+      "input_size": "112x112"
+    }
+  }
+}
